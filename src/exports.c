@@ -109,63 +109,6 @@ int blst_scalar_fr_check(const pow256 a)
                  bytes_are_zero(a, sizeof(pow256)));
 }
 
-int blst_sk_check(const pow256 a)
-{   return (int)check_mod_256(a, BLS12_381_r);   }
-
-int blst_sk_add_n_check(pow256 ret, const pow256 a, const pow256 b)
-{   return (int)add_n_check_mod_256(ret, a, b, BLS12_381_r);   }
-
-int blst_sk_sub_n_check(pow256 ret, const pow256 a, const pow256 b)
-{   return (int)sub_n_check_mod_256(ret, a, b, BLS12_381_r);   }
-
-int blst_sk_mul_n_check(pow256 ret, const pow256 a, const pow256 b)
-{
-    vec256 t[2];
-    const union {
-        long one;
-        char little;
-    } is_endian = { 1 };
-    bool_t is_zero;
-
-    if (((size_t)a|(size_t)b)%sizeof(limb_t) != 0 || !is_endian.little) {
-        limbs_from_le_bytes(t[0], a, sizeof(pow256));
-        limbs_from_le_bytes(t[1], b, sizeof(pow256));
-        a = (const byte *)t[0];
-        b = (const byte *)t[1];
-    }
-    mul_mont_sparse_256(t[0], BLS12_381_rRR, (const limb_t *)a, BLS12_381_r, r0);
-    mul_mont_sparse_256(t[0], t[0], (const limb_t *)b, BLS12_381_r, r0);
-    le_bytes_from_limbs(ret, t[0], sizeof(pow256));
-    is_zero = vec_is_zero(t[0], sizeof(vec256));
-    vec_zero(t, sizeof(t));
-
-    return (int)(is_zero^1);
-}
-
-void blst_sk_inverse(pow256 ret, const pow256 a)
-{
-    const union {
-        long one;
-        char little;
-    } is_endian = { 1 };
-
-    if (((size_t)a|(size_t)ret)%sizeof(limb_t) == 0 && is_endian.little) {
-        limb_t *out = (limb_t *)ret;
-        mul_mont_sparse_256(out, (const limb_t *)a, BLS12_381_rRR,
-                                                    BLS12_381_r, r0);
-        reciprocal_fr(out, out);
-        from_mont_256(out, out, BLS12_381_r, r0);
-    } else {
-        vec256 out;
-        limbs_from_le_bytes(out, a, 32);
-        mul_mont_sparse_256(out, out, BLS12_381_rRR, BLS12_381_r, r0);
-        reciprocal_fr(out, out);
-        from_mont_256(out, out, BLS12_381_r, r0);
-        le_bytes_from_limbs(ret, out, 32);
-        vec_zero(out, sizeof(out));
-    }
-}
-
 /*
  * BLS12-381-specific Fp shortcuts to assembly.
  */

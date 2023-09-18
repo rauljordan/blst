@@ -314,27 +314,6 @@ BLST_ERROR blst_p2_uncompress(blst_p2_affine *out, const byte in[96]);
 BLST_ERROR blst_p2_deserialize(blst_p2_affine *out, const byte in[192]);
 
 /*
- * Specification defines two variants, 'minimal-signature-size' and
- * 'minimal-pubkey-size'. To unify appearance we choose to distinguish
- * them by suffix referring to the public key type, more specifically
- * _pk_in_g1 corresponds to 'minimal-pubkey-size' and _pk_in_g2 - to
- * 'minimal-signature-size'. It might appear a bit counterintuitive
- * in sign call, but no matter how you twist it, something is bound to
- * turn a little odd.
- */
-/*
- * Secret-key operations.
- */
-void blst_keygen(blst_scalar *out_SK, const byte *IKM, size_t IKM_len,
-                 const byte *info DEFNULL, size_t info_len DEFNULL);
-void blst_sk_to_pk_in_g1(blst_p1 *out_pk, const blst_scalar *SK);
-void blst_sign_pk_in_g1(blst_p2 *out_sig, const blst_p2 *hash,
-                                          const blst_scalar *SK);
-void blst_sk_to_pk_in_g2(blst_p2 *out_pk, const blst_scalar *SK);
-void blst_sign_pk_in_g2(blst_p1 *out_sig, const blst_p1 *hash,
-                                          const blst_scalar *SK);
-
-/*
  * Pairing interface.
  */
 #ifndef SWIG
